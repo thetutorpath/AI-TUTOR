@@ -7,138 +7,87 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f6fc;
-      margin: 0;
-      padding: 0;
+      background-color: #f3f3fc;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
-      min-height: 100vh;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
     }
-    #loginBox, #chatBox {
-      background: white;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
       width: 90%;
-      max-width: 500px;
+      max-width: 600px;
     }
-    #chatMessages {
-      height: 300px;
-      overflow-y: auto;
+    .title {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+    .chat-box {
       border: 1px solid #ccc;
-      padding: 10px;
-      margin-bottom: 10px;
-      white-space: pre-wrap;
-    }
-    input, select, button {
-      margin: 5px 0;
-      padding: 10px;
+      padding: 1rem;
       border-radius: 10px;
-      border: 1px solid #ccc;
+      height: 200px;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+      background: #fefefe;
+    }
+    .chat-box p {
+      margin: 0.5rem 0;
+      color: green;
+    }
+    input[type="file"], input[type="text"] {
       width: 100%;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
     }
     button {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: white;
+      font-size: 1rem;
       cursor: pointer;
     }
-    #preview {
-      max-width: 100%;
-      display: none;
-      margin-top: 10px;
+    button:hover {
+      background-color: #45a049;
     }
   </style>
+  <script>
+    // Basic protection
+    const login = prompt("Enter User ID:");
+    if (login !== "demo") {
+      alert("Access Denied");
+      window.location.href = "https://www.google.com";
+    } else {
+      const pass = prompt("Enter Password:");
+      if (pass !== "demo@234") {
+        alert("Access Denied");
+        window.location.href = "https://www.google.com";
+      }
+    }
+  </script>
 </head>
 <body>
-
-<div id="loginBox">
-  <h2>Login</h2>
-  <input type="text" id="username" placeholder="User ID">
-  <input type="password" id="password" placeholder="Password">
-  <button onclick="validateLogin()">Login</button>
-</div>
-
-<div id="chatBox" style="display: none;">
-  <h2>AI English Tutor - Kritika</h2>
-  <div id="chatMessages"></div>
-  <input type="file" id="imageUpload" accept="image/*" onchange="handleImage(event)">
-  <img id="preview" />
-  <input type="text" id="userInput" placeholder="Type or speak...">
-  <button onclick="sendMessage()">Send</button>
-  <button onclick="repeatMessage()">🔁 Repeat</button>
-</div>
-
-<script>
-  let lastMessage = "";
-  let defaultVoice;
-
-  function validateLogin() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-    if (username === "demo" && password === "demo@234") {
-      document.getElementById('loginBox').style.display = 'none';
-      document.getElementById('chatBox').style.display = 'block';
-      initChat();
-    } else {
-      alert("Incorrect username or password");
-    }
-  }
-
-  function initChat() {
-    appendMessage("Kritika", "Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!");
-    appendMessage("Kritika", "Hello! What's on your mind today? Do you have any questions about a specific topic or would you like to chat about something in particular? I'm here to help!");
-  }
-
-  function appendMessage(sender, message) {
-    const chatMessages = document.getElementById('chatMessages');
-    const color = sender === 'You' ? 'blue' : 'green';
-    chatMessages.innerHTML += `<p style="color:${color}"><strong>${sender}:</strong> ${message}</p>`;
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    if (sender === 'Kritika') speak(message);
-  }
-
-  function sendMessage() {
-    const input = document.getElementById('userInput');
-    const text = input.value.trim();
-    if (!text) return;
-    appendMessage("You", text);
-    // Replace this with actual AI response if needed
-    const response = "That's interesting! Let's talk more about it.";
-    appendMessage("Kritika", response);
-    input.value = "";
-  }
-
-  function speak(text) {
-    lastMessage = text;
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.voice = speechSynthesis.getVoices().find(v => v.name.includes("Female") || v.name.includes("Google UK English Female") || v.name.includes("Samantha"));
-    utterance.lang = "en-IN";
-    speechSynthesis.speak(utterance);
-  }
-
-  function repeatMessage() {
-    if (lastMessage) speak(lastMessage);
-  }
-
-  function handleImage(event) {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = document.getElementById('preview');
-        img.src = e.target.result;
-        img.style.display = 'block';
-        appendMessage("You", "[Image uploaded]");
-        // Add image processing/AI recognition logic here if needed
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  speechSynthesis.onvoiceschanged = () => {
-    defaultVoice = speechSynthesis.getVoices().find(v => v.name.includes("Female") || v.name.includes("Google UK English Female") || v.name.includes("Samantha"));
-  };
-</script>
-
+  <div class="container">
+    <div class="title">AI English Tutor - Kritika</div>
+    <div class="chat-box">
+      <p><strong>Kritika:</strong> Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!</p>
+      <p><strong>Kritika:</strong> Hello! What's on your mind today? Do you have any questions about a specific topic or would you like to chat about something in particular? I'm here to help!</p>
+    </div>
+    <input type="file" />
+    <input type="text" placeholder="Type or speak..." />
+    <button>Send</button>
+    <button>Repeat</button>
+  </div>
 </body>
 </html>
