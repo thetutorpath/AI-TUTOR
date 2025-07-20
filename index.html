@@ -2,180 +2,143 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI English Tutor - Kritika</title>
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #f4f6fc;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    #loginBox, #chatBox {
+      background: white;
       padding: 20px;
-      background: #f0f4f9;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      width: 90%;
+      max-width: 500px;
     }
-    h1 {
-      text-align: center;
-      color: #4a4a4a;
-    }
-    #chatbox {
-      max-width: 700px;
-      margin: 0 auto;
-      background: #fff;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      height: 450px;
+    #chatMessages {
+      height: 300px;
       overflow-y: auto;
-    }
-    .message {
+      border: 1px solid #ccc;
+      padding: 10px;
       margin-bottom: 10px;
       white-space: pre-wrap;
     }
-    .user { color: #1a73e8; }
-    .bot { color: #34a853; }
-    #inputArea {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
+    input, select, button {
+      margin: 5px 0;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      width: 100%;
     }
-    input[type=text] {
-      flex: 1;
-      padding: 8px;
-    }
-    button, select {
-      padding: 8px 12px;
+    button {
       cursor: pointer;
+    }
+    #preview {
+      max-width: 100%;
+      display: none;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <h1>AI English Tutor - Kritika</h1>
-  <div id="chatbox"></div>
 
-  <div id="inputArea">
-    <input type="text" id="textInput" placeholder="Type or speak..." />
-    <button onclick="sendMessage()">Send</button>
-    <button onclick="startListening()">🎤</button>
-    <button onclick="pauseSpeech()">⏸️ Pause</button>
-    <button onclick="resumeSpeech()">▶️ Resume</button>
-    <button onclick="clearChat()">🗑️ Clear</button>
-    <select id="voiceSelect">
-      <option value="en-IN">English (India)</option>
-      <option value="hi-IN">Hindi (India)</option>
-    </select>
-    <select id="roleSelect">
-      <option value="Student">Student</option>
-      <option value="Teacher">Teacher</option>
-    </select>
-  </div>
+<div id="loginBox">
+  <h2>Login</h2>
+  <input type="text" id="username" placeholder="User ID">
+  <input type="password" id="password" placeholder="Password">
+  <button onclick="validateLogin()">Login</button>
+</div>
 
-  <script>
-    const apiKey = "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"; // Your Groq API Key
-    const chatbox = document.getElementById("chatbox");
-    const inputField = document.getElementById("textInput");
-    const voiceSelect = document.getElementById("voiceSelect");
-    const roleSelect = document.getElementById("roleSelect");
-    let currentUtterance = null;
+<div id="chatBox" style="display: none;">
+  <h2>AI English Tutor - Kritika</h2>
+  <div id="chatMessages"></div>
+  <input type="file" id="imageUpload" accept="image/*" onchange="handleImage(event)">
+  <img id="preview" />
+  <input type="text" id="userInput" placeholder="Type or speak...">
+  <button onclick="sendMessage()">Send</button>
+  <button onclick="repeatMessage()">🔁 Repeat</button>
+</div>
 
-    function appendMessage(sender, text) {
-      const msg = document.createElement("div");
-      msg.className = "message " + (sender === "You" ? "user" : "bot");
-      msg.textContent = `${sender}: ${text}`;
-      chatbox.appendChild(msg);
-      chatbox.scrollTop = chatbox.scrollHeight;
+<script>
+  let lastMessage = "";
+  let defaultVoice;
+
+  function validateLogin() {
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+    if (username === "demo" && password === "demo@234") {
+      document.getElementById('loginBox').style.display = 'none';
+      document.getElementById('chatBox').style.display = 'block';
+      initChat();
+    } else {
+      alert("Incorrect username or password");
     }
+  }
 
-    async function sendMessage() {
-      const message = inputField.value.trim();
-      if (!message) return;
-      appendMessage("You", message);
-      inputField.value = "";
-      inputField.focus();
+  function initChat() {
+    appendMessage("Kritika", "Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!");
+    appendMessage("Kritika", "Hello! What's on your mind today? Do you have any questions about a specific topic or would you like to chat about something in particular? I'm here to help!");
+  }
 
-      const thinking = document.createElement("div");
-      thinking.className = "message bot";
-      thinking.textContent = "Kritika: ...thinking...";
-      chatbox.appendChild(thinking);
-      chatbox.scrollTop = chatbox.scrollHeight;
+  function appendMessage(sender, message) {
+    const chatMessages = document.getElementById('chatMessages');
+    const color = sender === 'You' ? 'blue' : 'green';
+    chatMessages.innerHTML += `<p style="color:${color}"><strong>${sender}:</strong> ${message}</p>`;
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    if (sender === 'Kritika') speak(message);
+  }
 
-      const role = roleSelect.value;
-      const prompt = `${role}:\n${message}`;
+  function sendMessage() {
+    const input = document.getElementById('userInput');
+    const text = input.value.trim();
+    if (!text) return;
+    appendMessage("You", text);
+    // Replace this with actual AI response if needed
+    const response = "That's interesting! Let's talk more about it.";
+    appendMessage("Kritika", response);
+    input.value = "";
+  }
 
-      try {
-        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
-          },
-          body: JSON.stringify({
-            model: "llama3-8b-8192",
-            messages: [{ role: "user", content: prompt }],
-          }),
-        });
+  function speak(text) {
+    lastMessage = text;
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = speechSynthesis.getVoices().find(v => v.name.includes("Female") || v.name.includes("Google UK English Female") || v.name.includes("Samantha"));
+    utterance.lang = "en-IN";
+    speechSynthesis.speak(utterance);
+  }
 
-        const data = await response.json();
-        if (data.error) {
-          thinking.textContent = "Kritika: API Error - " + data.error.message;
-          return;
-        }
+  function repeatMessage() {
+    if (lastMessage) speak(lastMessage);
+  }
 
-        const reply = data.choices?.[0]?.message?.content || "Sorry, I didn't understand that.";
-        thinking.textContent = "Kritika: " + reply;
-        speak(reply);
-      } catch (err) {
-        thinking.textContent = "Kritika: Network error occurred.";
-      }
-    }
-
-    function startListening() {
-      const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-      recognition.lang = voiceSelect.value;
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
-
-      recognition.onresult = function (event) {
-        const transcript = event.results[0][0].transcript;
-        inputField.value = transcript;
-        sendMessage();
+  function handleImage(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.getElementById('preview');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        appendMessage("You", "[Image uploaded]");
+        // Add image processing/AI recognition logic here if needed
       };
-      recognition.onerror = function (event) {
-        console.error("Speech recognition error:", event.error);
-      };
-      recognition.start();
+      reader.readAsDataURL(file);
     }
+  }
 
-    function speak(text) {
-      if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-      }
-      currentUtterance = new SpeechSynthesisUtterance(text);
-      currentUtterance.lang = voiceSelect.value;
-      speechSynthesis.speak(currentUtterance);
-    }
+  speechSynthesis.onvoiceschanged = () => {
+    defaultVoice = speechSynthesis.getVoices().find(v => v.name.includes("Female") || v.name.includes("Google UK English Female") || v.name.includes("Samantha"));
+  };
+</script>
 
-    function pauseSpeech() {
-      if (speechSynthesis.speaking) {
-        speechSynthesis.pause();
-      }
-    }
-
-    function resumeSpeech() {
-      if (speechSynthesis.paused) {
-        speechSynthesis.resume();
-      }
-    }
-
-    function clearChat() {
-      chatbox.innerHTML = "";
-      appendMessage("Kritika", "Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!");
-    }
-
-    window.onload = () => {
-      appendMessage("Kritika", "Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!");
-      speak("Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!");
-    };
-  </script>
 </body>
 </html>
