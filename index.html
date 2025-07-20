@@ -4,90 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI English Tutor - Kritika</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f3f3fc;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 20px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-      width: 90%;
-      max-width: 600px;
-    }
-    .title {
-      font-size: 1.8rem;
-      font-weight: bold;
-      margin-bottom: 1rem;
-      text-align: center;
-    }
-    .chat-box {
-      border: 1px solid #ccc;
-      padding: 1rem;
-      border-radius: 10px;
-      height: 200px;
-      overflow-y: auto;
-      margin-bottom: 1rem;
-      background: #fefefe;
-    }
-    .chat-box p {
-      margin: 0.5rem 0;
-      color: green;
-    }
-    input[type="file"], input[type="text"] {
-      width: 100%;
-      padding: 0.5rem;
-      margin-bottom: 1rem;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      width: 100%;
-      padding: 0.75rem;
-      border: none;
-      border-radius: 5px;
-      background-color: #4caf50;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-  </style>
-  <script>
-    // Basic protection
-    const login = prompt("Enter User ID:");
-    if (login !== "demo") {
-      alert("Access Denied");
-      window.location.href = "https://www.google.com";
-    } else {
-      const pass = prompt("Enter Password:");
-      if (pass !== "demo@234") {
-        alert("Access Denied");
-        window.location.href = "https://www.google.com";
-      }
-    }
-  </script>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <div class="title">AI English Tutor - Kritika</div>
-    <div class="chat-box">
-      <p><strong>Kritika:</strong> Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!</p>
-      <p><strong>Kritika:</strong> Hello! What's on your mind today? Do you have any questions about a specific topic or would you like to chat about something in particular? I'm here to help!</p>
+  <div id="login-container" class="modal">
+    <div class="modal-content">
+      <h2>Login</h2>
+      <input type="text" id="username" placeholder="Username" />
+      <input type="password" id="password" placeholder="Password" />
+      <button onclick="validateLogin()">Login</button>
+      <p id="login-error" style="color:red;"></p>
     </div>
-    <input type="file" />
-    <input type="text" placeholder="Type or speak..." />
-    <button>Send</button>
-    <button>Repeat</button>
   </div>
+
+  <div id="chat-container" style="display:none;">
+    <h1>AI English Tutor - Kritika</h1>
+    <div id="chat-box"><p>Kritika: Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!</p></div>
+    <input type="text" id="user-input" placeholder="Type or speak..." />
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="repeatMessage()">🔁 Repeat</button>
+    <button onclick="uploadImage()">🖼️ Upload Image</button>
+    <input type="file" id="image-input" style="display:none;" accept="image/*" />
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
