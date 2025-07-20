@@ -9,6 +9,7 @@
       font-family: Arial, sans-serif;
       padding: 20px;
       background: #f0f4f9;
+      display: none; /* Hide page until login successful */
     }
     h1 {
       text-align: center;
@@ -39,7 +40,7 @@
       margin-left: auto;
       margin-right: auto;
     }
-    input[type=text], input[type=file] {
+    input[type=text] {
       flex: 1;
       padding: 8px;
     }
@@ -57,11 +58,11 @@
     <input type="text" id="textInput" placeholder="Type or speak..." />
     <button onclick="sendMessage()">Send</button>
     <button onclick="startListening()">🎤</button>
-    <button onclick="pauseSpeech()">⏸️</button>
-    <button onclick="resumeSpeech()">▶️</button>
-    <button onclick="repeatMessage()">🔁 Repeat</button>
-    <button onclick="clearChat()">🗑️</button>
-    <input type="file" accept="image/*" onchange="handleImageUpload(event)">
+    <button onclick="repeatLast()">🔁 Repeat</button>
+    <button onclick="pauseSpeech()">⏸️ Pause</button>
+    <button onclick="resumeSpeech()">▶️ Resume</button>
+    <button onclick="clearChat()">🗑️ Clear</button>
+    <input type="file" accept="image/*" onchange="handleImageUpload(event)" />
     <select id="voiceSelect">
       <option value="en-IN">English (India)</option>
       <option value="hi-IN">Hindi (India)</option>
@@ -73,13 +74,27 @@
   </div>
 
   <script>
-    const apiKey = "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";
+    // LOGIN SCREEN
+    window.onload = function () {
+      const user = prompt("Enter User ID:");
+      const pass = prompt("Enter Password:");
+      if (user === "demo" && pass === "demo@234") {
+        document.body.style.display = "block";
+        appendMessage("Kritika", "Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!");
+        speak("Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!");
+      } else {
+        alert("Access Denied");
+        document.body.innerHTML = "<h2 style='color:red; text-align:center;'>Unauthorized Access</h2>";
+      }
+    };
+
+    const apiKey = "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"; // Your Groq API Key
     const chatbox = document.getElementById("chatbox");
     const inputField = document.getElementById("textInput");
     const voiceSelect = document.getElementById("voiceSelect");
     const roleSelect = document.getElementById("roleSelect");
-    let lastBotMessage = "";
     let currentUtterance = null;
+    let lastSpokenText = "";
 
     function appendMessage(sender, text) {
       const msg = document.createElement("div");
@@ -103,8 +118,7 @@
       chatbox.scrollTop = chatbox.scrollHeight;
 
       const role = roleSelect.value;
-      const prompt = `${role}:
-${message}`;
+      const prompt = `${role}:\n${message}`;
 
       try {
         const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -127,7 +141,7 @@ ${message}`;
 
         const reply = data.choices?.[0]?.message?.content || "Sorry, I didn't understand that.";
         thinking.textContent = "Kritika: " + reply;
-        lastBotMessage = reply;
+        lastSpokenText = reply;
         speak(reply);
       } catch (err) {
         thinking.textContent = "Kritika: Network error occurred.";
@@ -152,30 +166,24 @@ ${message}`;
     }
 
     function speak(text) {
-      if (speechSynthesis.speaking) {
-        speechSynthesis.cancel();
-      }
+      if (speechSynthesis.speaking) speechSynthesis.cancel();
       currentUtterance = new SpeechSynthesisUtterance(text);
       currentUtterance.lang = voiceSelect.value;
+      const voices = speechSynthesis.getVoices().filter(v => v.lang === voiceSelect.value && v.name.includes("Female"));
+      currentUtterance.voice = voices[0] || speechSynthesis.getVoices()[0];
       speechSynthesis.speak(currentUtterance);
     }
 
     function pauseSpeech() {
-      if (speechSynthesis.speaking) {
-        speechSynthesis.pause();
-      }
+      if (speechSynthesis.speaking) speechSynthesis.pause();
     }
 
     function resumeSpeech() {
-      if (speechSynthesis.paused) {
-        speechSynthesis.resume();
-      }
+      if (speechSynthesis.paused) speechSynthesis.resume();
     }
 
-    function repeatMessage() {
-      if (lastBotMessage) {
-        speak(lastBotMessage);
-      }
+    function repeatLast() {
+      if (lastSpokenText) speak(lastSpokenText);
     }
 
     function clearChat() {
@@ -185,24 +193,18 @@ ${message}`;
 
     function handleImageUpload(event) {
       const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          appendMessage("You", "[Image uploaded]");
-          const img = document.createElement("img");
-          img.src = e.target.result;
-          img.style.maxWidth = "100%";
-          chatbox.appendChild(img);
-          chatbox.scrollTop = chatbox.scrollHeight;
-        };
-        reader.readAsDataURL(file);
-      }
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        appendMessage("You", "Uploaded image: ");
+        const img = document.createElement("img");
+        img.src = e.target.result;
+        img.style.maxWidth = "100%";
+        chatbox.appendChild(img);
+        chatbox.scrollTop = chatbox.scrollHeight;
+      };
+      reader.readAsDataURL(file);
     }
-
-    window.onload = () => {
-      appendMessage("Kritika", "Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!");
-      speak("Hi! I'm Kritika, your spoken English tutor. Let's enjoy practicing English!");
-    };
   </script>
 </body>
 </html>
